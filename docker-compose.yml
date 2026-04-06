@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  dg-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dg-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # RAGFlow is on the ragflow Docker network — use its service name
+      # RAGFlow's Nginx proxy listens on port 80 inside the network
+      RAGFLOW_BASE_URL: ${RAGFLOW_BASE_URL:-http://ragflow-server:80}
+      RAGFLOW_API_KEY: ${RAGFLOW_API_KEY}
+      RAGFLOW_TIMEOUT: ${RAGFLOW_TIMEOUT:-120}
+      FASTAPI_API_KEY: ${FASTAPI_API_KEY}
+    networks:
+      - docker_ragflow   # join the existing RAGFlow Docker network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  docker_ragflow:
+    external: true   # must already exist — created by RAGFlow's docker-compose
