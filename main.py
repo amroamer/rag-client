@@ -42,6 +42,7 @@ app = FastAPI(
         "report testing, and DQ rules generation."
     ),
     version="1.0.0",
+    root_path="/ragclient",
     lifespan=lifespan,
 )
 
